@@ -4,8 +4,8 @@ import { render } from 'react-dom';
 class App extends React.Component {
   state = {
     status: 'off',
-    time: 1200, 
-    timer: null,
+    time: 1200, // 20 min counter
+    timer: null, // 20 sec interval
   }
 
   formatTime = (time) => {
@@ -38,20 +38,36 @@ class App extends React.Component {
     return `${hours} : ${minutes}`;
   };
 
-  handleChangeStatus(newState) {
-    this.setState({ status: newState });
-  }
-
-  step = () => {};
-
-  startTimer = () => {
+  changeStatusHandler(newStatus) {
     this.setState({ 
-      timer: setInterval(this.step, 1000),
+      status: newStatus, 
     });
   };
 
+  step = () => {
+    // Remove one second, set state so a re-render happens.
+    let seconds = this.state.seconds - 1;
+    this.setState({
+      time: this.secondsToTime(seconds),
+      seconds: seconds,
+    });
+
+    // Check if we're at zero
+    if (seconds == 0) {
+      clearInterval(this.timer);
+    }
+  };
+
+  startTimer = () => {
+  
+    this.setState({
+      timer: setInterval(this.step, 1000),
+    });
+  
+  };
+
   render() {
-    const { status } = this.state;
+    const {status} = this.state;
 
     return (
       <div>
@@ -60,9 +76,9 @@ class App extends React.Component {
         <p>This app will help you track your time and inform you when it's time to rest.</p></div>}
         {(status === 'work') && <img src="./images/work.png" />}
         {(status === 'rest') && <img src="./images/rest.png" />}
-        {(status !== 'off') && <div className="timer">{ this.state.time }</div>}
-        {(status === 'off') && <button className="btn" onClick={ event => this.handleChangeStatus('work') }>Start</button>}
-        {(status !== 'off') && <button className="btn" onClick={ event => this.handleChangeStatus('rest') }>Stop</button>}
+        {(status !== 'off') && <div className="timer">{ this.state.time }</div>}  
+        {(status === 'off') && <button className="btn" onClick={ event => {this.changeStatusHandler('work'); this.startTimer() }}>Start</button>}
+        {(status !== 'off') && <button className="btn" onClick={ event => this.changeStatusHandler('rest')}>Stop</button>}
         <button className="btn btn-close">X</button>
       </div>
     )
